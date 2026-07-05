@@ -29,27 +29,50 @@ export async function POST(req: Request) {
     const { year, month, notes, ...financialFields } = body;
 
     const calc = calculate({ ...financialFields, fireTarget: null });
-    const { computedSavingsRate, ...dbCalcFields } = calc;
 
     const prev = await prisma.monthlyData.findFirst({
       where: { userId },
       orderBy: [{ year: "desc" }, { month: "desc" }],
     });
 
+    const dbFields = {
+      salary: financialFields.salary,
+      otherIncome: financialFields.otherIncome,
+      homeValue: financialFields.homeValue,
+      otherRealEstate: financialFields.otherRealEstate,
+      checkingBalance: financialFields.checkingBalance,
+      savingsBalance: financialFields.savingsBalance,
+      emergencyFund: financialFields.emergencyFund,
+      retirement401k: financialFields.retirement401k,
+      ira: financialFields.ira,
+      brokerageInv: financialFields.brokerageInv,
+      rsus: financialFields.rsus,
+      cryptoValue: financialFields.cryptoValue,
+      otherAssets: financialFields.otherAssets,
+      mortgageBalance: financialFields.mortgageBalance,
+      creditCardDebt: financialFields.creditCardDebt,
+      studentLoans: financialFields.studentLoans,
+      carLoan: financialFields.carLoan,
+      otherLoans: financialFields.otherLoans,
+      monthlyExpenses: financialFields.monthlyExpenses,
+      savingsRate: calc.computedSavingsRate,
+      netWorth: calc.netWorth,
+      totalAssets: calc.totalAssets,
+      totalLiabilities: calc.totalLiabilities,
+      totalInvestments: calc.totalInvestments,
+      totalIncome: calc.totalIncome,
+      monthlyCashFlow: calc.monthlyCashFlow,
+      healthScore: calc.healthScore,
+      debtToAssetRatio: calc.debtToAssetRatio,
+      emergencyFundMonths: calc.emergencyFundMonths,
+      fireProgress: calc.fireProgress,
+      notes,
+    };
+
     const entry = await prisma.monthlyData.upsert({
       where: { userId_year_month: { userId, year, month } },
-      update: {
-        ...financialFields,
-        ...dbCalcFields,
-        savingsRate: computedSavingsRate,
-        notes,
-      },
-      create: {
-        userId, year, month, notes,
-        ...financialFields,
-        ...dbCalcFields,
-        savingsRate: computedSavingsRate,
-      },
+      update: dbFields,
+      create: { userId, year, month, ...dbFields },
     });
 
     // Generate alerts
