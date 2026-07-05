@@ -47,5 +47,5 @@ next-env.d.ts
 .env.local
 .env*.local
 
-# Prisma
-prisma.config.ts
+# Prisma local overrides
+# prisma.config.ts is committed so Vercel can run migrations
