@@ -21,9 +21,36 @@ export default function SettingsPage() {
   const [phone, setPhone] = useState("");
   const [smsEnabled, setSmsEnabled] = useState(false);
   const [fireTarget, setFireTarget] = useState("");
+  const [contribution401k, setContribution401k] = useState("");
   const [saving, setSaving] = useState(false);
   const [alerts, setAlerts] = useState<any[]>([]);
   const [loadingAlerts, setLoadingAlerts] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/user")
+      .then((r) => r.json())
+      .then((d) => {
+        setPhone(d.phone ?? "");
+        setSmsEnabled(d.smsEnabled ?? false);
+        setFireTarget(d.fireTarget ? String(d.fireTarget) : "");
+        setContribution401k(d.monthly401kContribution ? String(d.monthly401kContribution) : "");
+      });
+  }, []);
+
+  async function saveSettings() {
+    setSaving(true);
+    await fetch("/api/user", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        phone,
+        smsEnabled,
+        fireTarget: fireTarget ? parseFloat(fireTarget) : null,
+        monthly401kContribution: contribution401k ? parseFloat(contribution401k) : 0,
+      }),
+    });
+    setSaving(false);
+  }
 
   useEffect(() => {
     fetch("/api/alerts")
@@ -65,22 +92,27 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* FIRE Target */}
-        <div className="rounded-2xl border border-white/8 bg-white/4 p-6">
-          <h3 className="font-semibold text-white mb-2">FIRE Target</h3>
-          <p className="text-xs text-white/40 mb-4">Set a custom FIRE number. Leave blank to use 25× annual expenses.</p>
-          <div className="flex gap-3">
-            <div className="relative flex-1">
+        {/* FIRE Target + 401k */}
+        <div className="rounded-2xl border border-white/8 bg-white/4 p-6 space-y-5">
+          <div>
+            <h3 className="font-semibold text-white mb-1">FIRE Target</h3>
+            <p className="text-xs text-white/40 mb-3">Leave blank to use 25× annual expenses.</p>
+            <div className="relative">
               <span className="absolute left-3 top-2.5 text-white/30 text-sm">$</span>
-              <Input
-                className="pl-7"
-                placeholder="1,000,000"
-                value={fireTarget}
-                onChange={(e) => setFireTarget(e.target.value)}
-              />
+              <Input className="pl-7" placeholder="1,000,000" value={fireTarget} onChange={(e) => setFireTarget(e.target.value)} />
             </div>
-            <Button variant="outline" onClick={() => {}}>Save</Button>
           </div>
+          <div>
+            <h3 className="font-semibold text-white mb-1">Monthly 401(k) Auto-Increment</h3>
+            <p className="text-xs text-white/40 mb-3">On the 1st of each month, this amount is automatically added to your 401(k) balance.</p>
+            <div className="relative">
+              <span className="absolute left-3 top-2.5 text-white/30 text-sm">$</span>
+              <Input className="pl-7" placeholder="500" value={contribution401k} onChange={(e) => setContribution401k(e.target.value)} />
+            </div>
+          </div>
+          <Button onClick={saveSettings} disabled={saving}>
+            {saving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</> : "Save"}
+          </Button>
         </div>
 
         {/* SMS Notifications */}
@@ -112,7 +144,7 @@ export default function SettingsPage() {
               </button>
               <span className="text-sm text-white/60">{smsEnabled ? "Enabled" : "Disabled"}</span>
             </div>
-            <Button disabled={saving}>
+            <Button onClick={saveSettings} disabled={saving}>
               {saving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</> : "Save Settings"}
             </Button>
           </div>
