@@ -29,6 +29,7 @@ export async function POST(req: Request) {
     const { year, month, notes, ...financialFields } = body;
 
     const calc = calculate({ ...financialFields, fireTarget: null });
+    const { computedSavingsRate, ...dbCalcFields } = calc;
 
     const prev = await prisma.monthlyData.findFirst({
       where: { userId },
@@ -39,15 +40,15 @@ export async function POST(req: Request) {
       where: { userId_year_month: { userId, year, month } },
       update: {
         ...financialFields,
-        ...calc,
-        savingsRate: calc.computedSavingsRate,
+        ...dbCalcFields,
+        savingsRate: computedSavingsRate,
         notes,
       },
       create: {
         userId, year, month, notes,
         ...financialFields,
-        ...calc,
-        savingsRate: calc.computedSavingsRate,
+        ...dbCalcFields,
+        savingsRate: computedSavingsRate,
       },
     });
 
