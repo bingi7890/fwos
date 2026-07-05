@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { SessionProvider } from "next-auth/react";
+import { PwaRegister } from "@/components/pwa-register";
 
 export const metadata: Metadata = {
   title: "Family Wealth OS",
@@ -18,7 +19,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="bg-[#0a0a0f] text-white antialiased">
-        <SessionProvider>{children}</SessionProvider>
+        <SessionProvider>
+          <PwaRegister />
+          {children}
+        </SessionProvider>
       </body>
     </html>
   );
