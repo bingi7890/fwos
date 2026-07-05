@@ -1,36 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FWOS — Family Wealth Operating System
 
-## Getting Started
+Modern, privacy-first personal finance management. No bank logins. No account numbers. Only summary values.
 
-First, run the development server:
+## Quick Start
 
+### 1. Install dependencies
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Configure environment
+Edit `.env.local` (already created):
+```
+DATABASE_URL="postgresql://user:password@host:5432/fwos"
+NEXTAUTH_SECRET="generate-a-random-string"
+NEXTAUTH_URL="http://localhost:3000"
+OPENAI_API_KEY="sk-..."          # optional: for AI advisor
+TWILIO_ACCOUNT_SID="AC..."       # optional: for SMS alerts
+TWILIO_AUTH_TOKEN="..."
+TWILIO_PHONE_NUMBER="+1..."
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Set up the database
+```bash
+# Push schema to your database
+npx prisma migrate dev --name init
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# (Optional) Seed demo data
+npx ts-node --compiler-options '{"module":"CommonJS"}' prisma/seed.ts
+```
 
-## Learn More
+### 4. Run the app
+```bash
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Visit http://localhost:3000
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Demo Account (after seeding)
+- Email: `demo@fwos.app`
+- Password: `password123`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Features
+- **Dashboard** — Net worth, assets, liabilities, investments, FIRE progress, health score
+- **Monthly Entry** — Enter financial summaries; all metrics auto-calculated
+- **Goals** — Track millionaire, retirement, emergency fund, debt payoff, and custom goals  
+- **AI Advisor** — GPT-powered analysis (never calculates, only interprets)
+- **Reports** — Monthly / quarterly / annual reports with HTML export
+- **Alerts** — Auto-generated alerts for credit card spikes, net worth drops, etc.
+- **SMS Notifications** — Twilio integration for real-time financial alerts
 
-## Deploy on Vercel
+## Deployment
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Frontend + API (Vercel)
+1. Push to GitHub
+2. Import to Vercel
+3. Add environment variables
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Database (Supabase / Railway)
+1. Create a PostgreSQL database
+2. Set `DATABASE_URL` in Vercel env vars
+3. Run `npx prisma migrate deploy`
+
+## Tech Stack
+- **Next.js 16** (App Router, TypeScript)
+- **Tailwind CSS 4** + custom dark theme
+- **Recharts** — Interactive charts
+- **Prisma 7** + PostgreSQL
+- **NextAuth v5** — Email/password auth
+- **OpenAI** — AI analysis only
+- **Twilio** — SMS notifications

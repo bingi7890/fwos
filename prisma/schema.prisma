@@ -1,0 +1,205 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String   @id @default(cuid())
+  name          String?
+  email         String   @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  phone         String?
+  smsEnabled    Boolean  @default(false)
+  fireTarget    Float?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  accounts    Account[]
+  sessions    Session[]
+  monthlyData MonthlyData[]
+  goals       Goal[]
+  alerts      Alert[]
+  reports     Report[]
+
+  @@map("users")
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+  @@map("verification_tokens")
+}
+
+model MonthlyData {
+  id     String @id @default(cuid())
+  userId String
+  year   Int
+  month  Int
+
+  salary          Float @default(0)
+  otherIncome     Float @default(0)
+  homeValue       Float @default(0)
+  otherRealEstate Float @default(0)
+  checkingBalance Float @default(0)
+  savingsBalance  Float @default(0)
+  emergencyFund   Float @default(0)
+  retirement401k  Float @default(0)
+  ira             Float @default(0)
+  brokerageInv    Float @default(0)
+  rsus            Float @default(0)
+  cryptoValue     Float @default(0)
+  otherAssets     Float @default(0)
+  mortgageBalance Float @default(0)
+  creditCardDebt  Float @default(0)
+  studentLoans    Float @default(0)
+  carLoan         Float @default(0)
+  otherLoans      Float @default(0)
+  monthlyExpenses Float @default(0)
+  savingsRate     Float @default(0)
+
+  netWorth            Float @default(0)
+  totalAssets         Float @default(0)
+  totalLiabilities    Float @default(0)
+  totalInvestments    Float @default(0)
+  totalIncome         Float @default(0)
+  monthlyCashFlow     Float @default(0)
+  healthScore         Float @default(0)
+  debtToAssetRatio    Float @default(0)
+  emergencyFundMonths Float @default(0)
+  fireProgress        Float @default(0)
+
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, year, month])
+  @@map("monthly_data")
+}
+
+model Goal {
+  id            String    @id @default(cuid())
+  userId        String
+  name          String
+  type          GoalType
+  targetAmount  Float
+  currentAmount Float     @default(0)
+  targetDate    DateTime?
+  description   String?
+  isCompleted   Boolean   @default(false)
+  completedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("goals")
+}
+
+model Alert {
+  id        String        @id @default(cuid())
+  userId    String
+  type      AlertType
+  title     String
+  message   String
+  severity  AlertSeverity @default(INFO)
+  isRead    Boolean       @default(false)
+  smsSent   Boolean       @default(false)
+  createdAt DateTime      @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("alerts")
+}
+
+model Report {
+  id        String     @id @default(cuid())
+  userId    String
+  type      ReportType
+  title     String
+  period    String
+  content   Json
+  createdAt DateTime   @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("reports")
+}
+
+enum GoalType {
+  MILLIONAIRE
+  EMERGENCY_FUND
+  PAY_OFF_DEBT
+  BUY_HOME
+  RETIREMENT
+  EDUCATION
+  VACATION
+  CUSTOM
+}
+
+enum AlertType {
+  CREDIT_CARD_INCREASED
+  SAVINGS_RATE_DECREASED
+  NET_WORTH_DROPPED
+  EMERGENCY_FUND_LOW
+  INVESTMENT_MISSED
+  GOAL_COMPLETED
+  UPDATE_OVERDUE
+  NET_WORTH_MILESTONE
+  FIRE_PROGRESS
+}
+
+enum AlertSeverity {
+  INFO
+  WARNING
+  SUCCESS
+  ERROR
+}
+
+enum ReportType {
+  MONTHLY
+  QUARTERLY
+  ANNUAL
+  GOAL_PROGRESS
+}
